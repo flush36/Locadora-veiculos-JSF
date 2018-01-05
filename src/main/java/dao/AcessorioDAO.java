@@ -1,0 +1,45 @@
+package dao;
+
+import java.io.Serializable;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+
+import com.algaworks.curso.jpa2.util.jpa.Transactional;
+
+import modelo.Acessorio;
+import service.NegocioException;
+
+public class AcessorioDAO implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Inject
+	private EntityManager manager;
+	
+	public Acessorio buscarPeloCodigo(Long codigo) {
+		return manager.find(Acessorio.class, codigo);
+	}
+	
+	public void salvar(Acessorio fabricante) {
+		manager.merge(fabricante);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Acessorio> buscarTodos() {
+		return manager.createQuery("from Acessorio").getResultList();
+	}
+	
+	@Transactional
+	public void excluir(Acessorio fabricante) throws NegocioException {
+		fabricante = buscarPeloCodigo(fabricante.getCodigo());
+		try {
+			manager.remove(fabricante);
+			manager.flush();
+		} catch (PersistenceException e) {
+			throw new NegocioException("Acessorio não pode ser excluído.");
+		}
+	}
+}
